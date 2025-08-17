@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Intelligent LLM Router',
-  description: 'Dynamic LLM routing engine with GPT-5 variant optimization',
+  description: 'Smart routing between GPT-4, GPT-3.5, and Claude models for optimal cost and performance',
 }
 
 export default function RootLayout({
@@ -17,9 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen bg-gray-50">
-          {children}
-        </div>
+        {children}
       </body>
     </html>
   )

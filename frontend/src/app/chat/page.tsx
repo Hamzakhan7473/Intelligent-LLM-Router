@@ -1,15 +1,15 @@
 import React from 'react';
-import ChatInterface from '@/components/chat/ChatInterface';
+import LLMRouterInterface from '@/components/chat/ChatInterface';
 
 export const metadata = {
-  title: 'Chat - Intelligent LLM Router',
-  description: 'Test the intelligent LLM routing system with real-time chat interface',
+  title: 'LLM Router - Test Intelligent Model Selection',
+  description: 'Experience intelligent routing between GPT-4, GPT-3.5, and Claude models based on task type, complexity, and performance preferences',
 };
 
-export default function ChatPage() {
+export default function LLMRouterPage() {
   return (
-    <div className="h-screen">
-      <ChatInterface />
+    <div className="min-h-screen bg-gray-50 p-4">
+      <LLMRouterInterface />
     </div>
   );
 }

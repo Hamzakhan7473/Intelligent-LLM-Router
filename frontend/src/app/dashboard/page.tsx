@@ -13,7 +13,7 @@ interface AnalyticsData {
   totalCost: number;
   avgLatency: number;
   costSavings: number;
-  variantDistribution: Record<string, number>;
+  modelDistribution: Record<string, number>;
   dailyStats: Array<{
     date: string;
     requests: number;
@@ -25,7 +25,7 @@ interface AnalyticsData {
   priorityPreferences: Record<string, number>;
   qualityMetrics: {
     avgQuality: number;
-    qualityByVariant: Record<string, number>;
+    qualityByModel: Record<string, number>;
   };
 }
 
@@ -34,11 +34,11 @@ const mockData: AnalyticsData = {
   totalCost: 45.23,
   avgLatency: 892,
   costSavings: 68.4, // percentage
-  variantDistribution: {
-    'gpt-5-nano': 35,
-    'gpt-5-mini': 42,
-    'gpt-5-chat': 18,
-    'gpt-5': 5
+  modelDistribution: {
+    'gpt-3.5-turbo': 45,
+    'gpt-4': 15,
+    'claude-3-sonnet-20240229': 28,
+    'claude-3-haiku-20240307': 12
   },
   dailyStats: [
     { date: '2025-08-01', requests: 1200, cost: 4.2, avgLatency: 850, savings: 65.2 },
@@ -62,11 +62,11 @@ const mockData: AnalyticsData = {
   },
   qualityMetrics: {
     avgQuality: 8.4,
-    qualityByVariant: {
-      'gpt-5-nano': 7.9,
-      'gpt-5-mini': 8.8,
-      'gpt-5-chat': 9.2,
-      'gpt-5': 9.5
+    qualityByModel: {
+      'gpt-3.5-turbo': 7.8,
+      'gpt-4': 9.3,
+      'claude-3-sonnet-20240229': 8.7,
+      'claude-3-haiku-20240307': 7.9
     }
   }
 };
@@ -115,13 +115,14 @@ export default function AnalyticsDashboard() {
     </div>
   );
 
-  const VariantCard = ({ 
+  const ModelCard = ({ 
     name, 
     percentage, 
     color, 
     description,
     avgCost,
-    avgLatency 
+    avgLatency,
+    provider 
   }: {
     name: string;
     percentage: number;
@@ -129,10 +130,14 @@ export default function AnalyticsDashboard() {
     description: string;
     avgCost: number;
     avgLatency: number;
+    provider: string;
   }) => (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <div className="flex items-center justify-between mb-3">
-        <h4 className="font-medium text-gray-900">{name}</h4>
+        <div>
+          <h4 className="font-medium text-gray-900">{name}</h4>
+          <p className="text-xs text-gray-500 capitalize">{provider}</p>
+        </div>
         <span className={`px-2 py-1 rounded-full text-xs font-medium bg-${color}-100 text-${color}-800`}>
           {percentage}%
         </span>
@@ -154,6 +159,22 @@ export default function AnalyticsDashboard() {
     </div>
   );
 
+  const getModelDisplayName = (modelId: string): string => {
+    const modelNames: Record<string, string> = {
+      'gpt-3.5-turbo': 'GPT-3.5 Turbo',
+      'gpt-4': 'GPT-4',
+      'claude-3-sonnet-20240229': 'Claude Sonnet',
+      'claude-3-haiku-20240307': 'Claude Haiku'
+    };
+    return modelNames[modelId] || modelId;
+  };
+
+  const getModelProvider = (modelId: string): string => {
+    if (modelId.startsWith('gpt-')) return 'OpenAI';
+    if (modelId.startsWith('claude-')) return 'Anthropic';
+    return 'Unknown';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -162,7 +183,7 @@ export default function AnalyticsDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
-              <p className="text-gray-600">Monitor your LLM routing performance and costs</p>
+              <p className="text-gray-600">Monitor your intelligent LLM routing performance and costs</p>
             </div>
             
             <div className="flex items-center space-x-3">
@@ -201,7 +222,7 @@ export default function AnalyticsDashboard() {
             change="-34.2%"
             icon={DollarSign}
             color="green"
-            subtitle="68% savings vs GPT-5 only"
+            subtitle="68% savings vs GPT-4 only"
           />
           
           <MetricCard
@@ -268,44 +289,48 @@ export default function AnalyticsDashboard() {
           </div>
         </div>
 
-        {/* GPT-5 Variant Distribution */}
+        {/* Model Distribution */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">GPT-5 Variant Usage</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Model Usage Distribution</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <VariantCard
-              name="GPT-5 Nano"
-              percentage={data.variantDistribution['gpt-5-nano']}
+            <ModelCard
+              name="GPT-3.5 Turbo"
+              percentage={data.modelDistribution['gpt-3.5-turbo']}
               color="green"
-              description="Ultra-fast responses for simple queries"
-              avgCost={0.003}
-              avgLatency={400}
+              description="Fast and cost-effective for general tasks"
+              avgCost={0.002}
+              avgLatency={500}
+              provider="OpenAI"
             />
             
-            <VariantCard
-              name="GPT-5 Mini"
-              percentage={data.variantDistribution['gpt-5-mini']}
+            <ModelCard
+              name="Claude Sonnet"
+              percentage={data.modelDistribution['claude-3-sonnet-20240229']}
               color="blue"
-              description="Balanced performance for most tasks"
+              description="Balanced performance for analysis and writing"
               avgCost={0.008}
               avgLatency={800}
+              provider="Anthropic"
             />
             
-            <VariantCard
-              name="GPT-5 Chat"
-              percentage={data.variantDistribution['gpt-5-chat']}
+            <ModelCard
+              name="GPT-4"
+              percentage={data.modelDistribution['gpt-4']}
               color="purple"
-              description="Specialized reasoning and explanations"
-              avgCost={0.012}
-              avgLatency={1000}
+              description="Maximum capability for complex reasoning"
+              avgCost={0.030}
+              avgLatency={1200}
+              provider="OpenAI"
             />
             
-            <VariantCard
-              name="GPT-5 Full"
-              percentage={data.variantDistribution['gpt-5']}
+            <ModelCard
+              name="Claude Haiku"
+              percentage={data.modelDistribution['claude-3-haiku-20240307']}
               color="orange"
-              description="Maximum capability for complex tasks"
-              avgCost={0.015}
-              avgLatency={1200}
+              description="Ultra-fast responses for simple queries"
+              avgCost={0.005}
+              avgLatency={400}
+              provider="Anthropic"
             />
           </div>
         </div>
@@ -361,10 +386,10 @@ export default function AnalyticsDashboard() {
             </div>
             
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-700">Quality by Variant</h4>
-              {Object.entries(data.qualityMetrics.qualityByVariant).map(([variant, quality]) => (
-                <div key={variant} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">{variant}</span>
+              <h4 className="font-medium text-gray-700">Quality by Model</h4>
+              {Object.entries(data.qualityMetrics.qualityByModel).map(([modelId, quality]) => (
+                <div key={modelId} className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">{getModelDisplayName(modelId)}</span>
                   <div className="flex items-center space-x-2">
                     <div className="w-20 bg-gray-200 rounded-full h-2">
                       <div
@@ -388,7 +413,7 @@ export default function AnalyticsDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600">${(data.totalCost * 3.16).toFixed(2)}</div>
-                <div className="text-sm text-gray-600">Would cost with GPT-5 only</div>
+                <div className="text-sm text-gray-600">Would cost with GPT-4 only</div>
               </div>
               
               <div className="text-center">
@@ -404,7 +429,7 @@ export default function AnalyticsDashboard() {
             
             <p className="text-gray-600 mb-4">
               Your intelligent routing decisions have saved <strong>${((data.totalCost * 3.16) - data.totalCost).toFixed(2)}</strong> 
-              ({data.costSavings}%) compared to using GPT-5 for all requests.
+              ({data.costSavings}%) compared to using GPT-4 for all requests.
             </p>
             
             <div className="flex justify-center">
